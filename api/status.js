@@ -13,8 +13,7 @@ export class RateLimitError extends Error {
 const trim = (v) => v?.replace(/^["']|["']$/g, '').trim()
 const absUrl = (path) => path.startsWith('http') ? path : `${API}${path.startsWith('/') ? path : `/${path}`}`
 
-const keyOf = (o = {}) => trim(o.apiKey) || trim(o.api_key)
-  || trim(process.env.UPTIMEROBOT_API_KEY) || trim(process.env.VITE_UPTIMEROBOT_API_KEY)
+const keyOf = (o = {}) => trim(o.apiKey) || trim(o.api_key)  || trim(o?.env?.UPTIMEROBOT_API_KEY) || trim(o?.env?.VITE_UPTIMEROBOT_API_KEY)  || trim(process.env.UPTIMEROBOT_API_KEY) || trim(process.env.VITE_UPTIMEROBOT_API_KEY)
 
 async function get(apiKey, url) {
   const res = await fetch(url, {
@@ -88,11 +87,17 @@ export async function getCachedMonitorStatus(apiKey, { force = false } = {}) {
   return data
 }
 
-export async function parseRequestApiKey(req) {
-  const env = process.env.UPTIMEROBOT_API_KEY || process.env.VITE_UPTIMEROBOT_API_KEY
+export async function parseRequestApiKey(input) {
+  const env = keyOf(input)
   if (env) return env
-  const auth = req.headers.get('Authorization')
-  if (auth?.startsWith('Bearer ')) return auth.slice(7)
+
+  const req = input?.request ?? input
+  if (!req || typeof req !== 'object') return null
+
+  const auth = req.headers?.get?.('Authorization') ?? req.headers?.authorization
+  if (typeof auth === 'string' && auth.startsWith('Bearer ')) return auth.slice(7)
+
+  if (typeof req.url !== 'string') return null
   const q = new URL(req.url).searchParams
   return q.get('api_key') || q.get('apiKey') || null
 }

@@ -11,13 +11,15 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
   headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL_MS / 1000 | 0}` }
 })
 
-export async function onRequest({ request }) {
+export async function onRequest(context) {
+  const request = context?.request ?? context
+
   if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
   if (request.method !== 'GET' && request.method !== 'POST') return json({ error: '只支持 GET / POST' }, 405)
 
   try {
     const url = new URL(request.url)
-    const apiKey = await parseRequestApiKey(request)
+    const apiKey = await parseRequestApiKey(context)
     const monitorId = url.searchParams.get('monitorId')
 
     if (monitorId) {

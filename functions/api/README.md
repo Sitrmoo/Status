@@ -1,6 +1,6 @@
 # API 目录说明
 
-本目录 (`functions/api/`) 包含 **腾讯云 EdgeOne Pages** 和 **Cloudflare Pages** 的 API 代理实现，对接 UptimeRobot **v3 API**。
+本目录 (`functions/api/`) 包含  **Cloudflare Pages** 的 API 代理实现，对接 UptimeRobot **v3 API**。
 
 ## 文件说明
 
